@@ -6,6 +6,8 @@ from sqlalchemy.sql.schema import ForeignKey
 from flask_marshmallow import Marshmallow
 from sqlalchemy.sql.sqltypes import Boolean
 
+#Mostly Flask and SQLite configurations.
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///flasksql'
@@ -26,7 +28,7 @@ class Users(db.Model):
         self.username = username
         self.password = password
 
-#Folders, still not implemented.
+#Folders, these serve as a reference to the frontend app to know where to search for the tasks.
 
 class Folders(db.Model):
     id = Column(Integer, primary_key = True)
@@ -56,31 +58,15 @@ class TaskSchema(ma.Schema):
     class Meta:
         fields = ("id", "task", "is_completed","folder")
 
-# class UserSchema(ma.Schema):
-#     class Meta:
-#         fields = ("id", "user", "password")
-
 class FolderSchema(ma.Schema):
     class Meta:
         fields = ("id", "name")
 
-# user_schema = UserSchema()
 folder_schema = FolderSchema()
 task_schema = TaskSchema()
 tasks_schema = TaskSchema(many = True)
 folders_schema = FolderSchema(many = True)
 
-#This function creates new users, requiring just User and Password to create (id created automatically).
-
-# @app.route('/user', methods = ['POST'])
-# def create_user():
-#     username = request.json['user']
-#     password = request.json['pass']
-#     new_user = Users(username, password)
-#     db.session.add(new_user)
-#     db.session.commit()
-
-#     return user_schema.jsonify(new_user)
 
 #This function creates the folders, by introducing just the folder's name (Commented because it is not finished).
 
@@ -100,17 +86,16 @@ def create_task():
     task = request.form.get('task')
     is_completed = False
     new_task = Tasks(task,is_completed,selectedFolder)
-
     db.session.add(new_task)
     db.session.commit()
 
     return redirect(url_for('page'))
 
-#Here i ask the server for the tasks, it answers you the ID, task, and it should also return whether is completed or not.
+#Here i ask the server for the tasks, it returns and shows the tasks of the selected folder.
 
 @app.route('/', methods = ['GET'])
 def get_tasks():
-    all_tasks = Tasks.query.all()
+
     all_folders = Folders.query.all()
     folders = folders_schema.dump(all_folders)
     selectedtasks = Tasks.query.filter_by(folder=selectedFolder)
@@ -118,7 +103,8 @@ def get_tasks():
     #result = tasks_schema.dump(all_tasks)
     return render_template('main.html', folders = folders, result = result, selectedFolder = selectedFolder)
 
-#This function updates the status of the tasks.
+#This function tells the frontend app the selected folder.
+
 @app.route('/updatefolder/<id>', methods = ['GET'])
 def updateFolder(id):
     global selectedFolder
@@ -126,6 +112,7 @@ def updateFolder(id):
     selectedFolder = id
     return redirect(url_for('page'))
 
+#This changes the status of the tasks from completed to non completed and vice versa.
 
 @app.route('/tasks/<id>')
 def update(id):
@@ -143,6 +130,8 @@ def delete(id):
     db.session.commit()
     return redirect(url_for('page'))
 
+#This deletes the entire selected folder, and all the tasks that belong to that folder.
+
 @app.route('/deletefolder/<id>')
 def deletefolder(id):
     global selectedFolder
@@ -156,11 +145,7 @@ def deletefolder(id):
     selectedFolder = 0
     return redirect(url_for('page'))
 
-
-# @app.route('/folder/<id>', methods = ['GET'])
-# def get_folder(id):
-#     folder = Folders.query.get(id)
-#     return task_schema.jsonify(folder)
+#Default function to show the page.
 
 @app.route('/')
 def page():
