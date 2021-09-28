@@ -1,12 +1,10 @@
-from flask import Flask, request,  render_template, redirect, url_for, flash
-from flask.json import jsonify
+from flask import Flask, request,  render_template, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import interfaces, relationship
-from sqlalchemy.sql.elements import Null
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
 from flask_marshmallow import Marshmallow
-from sqlalchemy.sql.sqltypes import NULLTYPE, Boolean
+from sqlalchemy.sql.sqltypes import Boolean
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
