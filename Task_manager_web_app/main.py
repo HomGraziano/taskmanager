@@ -6,7 +6,7 @@ from sqlalchemy.sql.schema import ForeignKey
 from flask_marshmallow import Marshmallow
 from sqlalchemy.sql.sqltypes import Boolean
 
-#Mostly Flask and SQLite configurations.
+# Mostly Flask and SQLite configurations.
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -15,20 +15,20 @@ db = SQLAlchemy(app)
 ma = Marshmallow(app)
 id = 0
 selectedFolder = 0
+nameOfFolder= ""
 
-#Users class, for the login system to work.
+# Users class, for the login system to work.
 
 class Users(db.Model):
     id = Column(Integer, primary_key = True)
     username = Column(String(18), nullable = False)
     password = Column(String(50), nullable = False)
-    # user_folders = relationship("Folders")
 
     def __init__(self, username, password):
         self.username = username
         self.password = password
 
-#Folders, these serve as a reference to the frontend app to know where to search for the tasks.
+# Folders, these serve as a reference to the frontend app to know where to search for the tasks.
 
 class Folders(db.Model):
     id = Column(Integer, primary_key = True)
@@ -38,7 +38,7 @@ class Folders(db.Model):
     def __init__(self, name):
         self.name = name
 
-#Tasks class, every instance of the object Tasks is linked to a folder.
+# Tasks class, every instance of the object Tasks is linked to a folder.
 
 class Tasks(db.Model):
     id = Column(Integer, primary_key = True)
@@ -51,7 +51,7 @@ class Tasks(db.Model):
         self.is_completed = is_completed
         self.folder = selectedFolder
 
-#The schemas for the server to return info
+# The schemas for the server to return info
 
 db.create_all()
 class TaskSchema(ma.Schema):
@@ -68,7 +68,7 @@ tasks_schema = TaskSchema(many = True)
 folders_schema = FolderSchema(many = True)
 
 
-#This function creates the folders, by introducing just the folder's name (Commented because it is not finished).
+# This function creates the folders, by introducing just the folder's name (Commented because it is not finished).
 
 @app.route('/folder', methods = ['POST'])
 def create_folder():
@@ -79,7 +79,7 @@ def create_folder():
 
     return redirect(url_for('page'))
 
-#This function creates the tasks, requiring the user to introduce just the task name (id, completition is False by default and folder is given automatically)
+# This function creates the tasks, requiring the user to introduce just the task name (id, completition is False by default and folder is given automatically)
 
 @app.route('/add', methods = ['POST'])
 def create_task():
@@ -91,7 +91,7 @@ def create_task():
 
     return redirect(url_for('page'))
 
-#Here i ask the server for the tasks, it returns and shows the tasks of the selected folder.
+# Here i ask the server for the tasks, it returns and shows the tasks of the selected folder.
 
 @app.route('/', methods = ['GET'])
 def get_tasks():
@@ -100,19 +100,20 @@ def get_tasks():
     folders = folders_schema.dump(all_folders)
     selectedtasks = Tasks.query.filter_by(folder=selectedFolder)
     result = tasks_schema.dump(selectedtasks)
-    #result = tasks_schema.dump(all_tasks)
-    return render_template('main.html', folders = folders, result = result, selectedFolder = selectedFolder)
+    return render_template('main.html', folders = folders, result = result, selectedFolder = selectedFolder, nameOfFolder = nameOfFolder)
 
-#This function tells the frontend app the selected folder.
+# This function tells the frontend app the selected folder.
 
 @app.route('/updatefolder/<id>', methods = ['GET'])
 def updateFolder(id):
     global selectedFolder
-    global result
+    global nameOfFolder
+    folderNameToShow = Folders.query.filter_by(id=id).first()
+    nameOfFolder = folderNameToShow.name
     selectedFolder = id
     return redirect(url_for('page'))
 
-#This changes the status of the tasks from completed to non completed and vice versa.
+# This changes the status of the tasks from completed to non completed and vice versa.
 
 @app.route('/tasks/<id>')
 def update(id):
@@ -121,7 +122,7 @@ def update(id):
     db.session.commit()
     return redirect(url_for('page'))
 
-#This function is used to delete the tasks, whether theyre completed or not.
+# This function is used to delete the tasks, whether theyre completed or not.
 
 @app.route('/delete/<id>')
 def delete(id):
@@ -130,7 +131,7 @@ def delete(id):
     db.session.commit()
     return redirect(url_for('page'))
 
-#This deletes the entire selected folder, and all the tasks that belong to that folder.
+# This deletes the entire selected folder, and all the tasks that belong to that folder.
 
 @app.route('/deletefolder/<id>')
 def deletefolder(id):
@@ -145,14 +146,14 @@ def deletefolder(id):
     selectedFolder = 0
     return redirect(url_for('page'))
 
-#Default function to show the page.
+# Default function to show the page.
 
 @app.route('/')
 def page():
     return render_template('main.html')
 
 if __name__ == '__main__':
-    app.run(app.run(host="0.0.0.0"))
+    app.run(host="0.0.0.0")
 
 
 
