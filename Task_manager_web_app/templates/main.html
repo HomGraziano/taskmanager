@@ -36,14 +36,25 @@
             </tr></thead>
             <tbody>
                 {% for folder in folders %}
-                <tr>
-                    <td class="collapsing">
-                      <i class="folder icon"></i> {{folder.id}}
-                    </td>
-                    <td><a>{{folder.name}}</a></td>
-                    <td class= "right aligned"><a class="ui blue button" href="/updatefolder/{{ folder.id }}">View
-                    </a><a class="ui red button" href="/deletefolder/{{ folder.id }}">Delete</a></td>
-                </tr>               
+                  {% if nameOfFolder == folder.name %}
+                    <tr>
+                        <td class="collapsing">
+                          <i class="folder icon"></i> {{folder.id}}
+                        </td>
+                        <td><u>{{folder.name}}</u></td>
+                        <td class= "right aligned"><a class="ui blue button" href="/updatefolder/{{ folder.id }}">View
+                        </a><a class="ui red button" href="/deletefolder/{{ folder.id }}">Delete</a></td>
+                    </tr>
+                  {% else %}                   
+                    <tr>
+                      <td class="collapsing">
+                        <i class="folder icon"></i> {{folder.id}}
+                      </td>
+                      <td><a>{{folder.name}}</a></td>
+                      <td class= "right aligned"><a class="ui blue button" href="/updatefolder/{{ folder.id }}">View
+                      </a><a class="ui red button" href="/deletefolder/{{ folder.id }}">Delete</a></td>
+                    </tr>
+                  {% endif %}
                 {% endfor %}
             </tbody>
           </table>
@@ -55,7 +66,7 @@
                 <h2 class="ui header">
                     <i class="settings icon"></i>
                     <div class="content">
-                      To do List - Folder {{selectedFolder}}
+                      To do List - {{nameOfFolder}}
                       <div class="sub header">Create and manage your tasks.</div>
                     </div>
                   </h2>
